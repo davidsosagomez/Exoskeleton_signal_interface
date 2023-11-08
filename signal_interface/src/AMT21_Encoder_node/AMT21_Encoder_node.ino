@@ -3,7 +3,7 @@
 
 ros::NodeHandle nh;
 
-std_msgs::JointState joint_state_msg;
+sensor_msgs::JointState joint_state_msg;
 ros::Publisher joint_state_pub("joint_states", &joint_state_msg);
 
 /* Serial rates for UART */
@@ -13,18 +13,7 @@ ros::Publisher joint_state_pub("joint_states", &joint_state_msg);
 /* We will use this define macro so we can write code once compatible with 12 or 14 bit encoders */
 #define RESOLUTION            14
 
-/* The AMT21 encoder is able to have a range of different values for its node address. This allows there
- * to be multiple encoders on on the RS485 bus. The encoder will listen for its node address, and that node
- * address doubles as the position request command. This simplifies the protocol so that all the host needs
- * to do is transmit the node address and the encoder will immediately respond with the position. The node address
- * can be any 8-bit number, where the bottom 2 bits are both 0. This means that there are 63 available addresses.
- * The bottom two bits are left as zero, because those bit slots are used to indicate extended commands. Taking
- * the node address and adding 0x01 changes the command to reading the turns counter (multi-turn only), and adding
- * 0x02 indicates that a second extended command will follow the first. We will define two encoder addresses below,
- * and then we will define the modifiers, but to reduce code complexity and the number of defines, we will not
- * define every single variation. 0x03 is unused and therefore reserved at this time.
- *
- */
+
 #define RS485_RESET           0x75
 #define RS485_ZERO            0x5E
 #define RS485_ENC0            0x54
@@ -34,13 +23,6 @@ ros::Publisher joint_state_pub("joint_states", &joint_state_msg);
 #define RS485_TURNS           0x01
 #define RS485_EXT             0x02
 
-/* The RS485 transceiver uses 2 pins to control the state of the differential RS485 lines A/B. To control
- * the transevier we will put those pins on our digital IO pins. We will define those pins here now. We will get
- * into more information about this later on, but it is important to understand that because of the high speed of the
- * AMT21 encoder, the toggling of these pins must occur very quickly. More information available in the walkthrough online.
- * Receive enable, drive enable, data in, received data out. Typically the RE and DE pins are connected together and controlled
- * with 1 IO pin but we'll connect them all up for full control.
- */
 #define RS485_T_RE            8
 #define RS485_T_DE            9
 #define RS485_T_DI            18
@@ -54,8 +36,6 @@ ros::Publisher joint_state_pub("joint_states", &joint_state_msg);
 #define RS485_T_2             2 //unused
 #define RS485_T_3             3 //unused
 
-// float previousPosition[] = {0, 0}; // Stores the previous readings for each encoder
-// const float alpha = 0.01; // The degree of filtering (adjust based on your needs)
 
 void setup()
 {
@@ -69,13 +49,23 @@ void setup()
 
   //Initialize the UART link to the RS485 transceiver
   Serial1.begin(RS485_BAUDRATE);
+
+  // Initialize ROS
+  nh.initNode();
+  nh.advertise(joint_state_pub);
+
+  // Initialize JointState message
+  joint_state_msg.name_length = 2; // For 2 joints
+  joint_state_msg.position_length = 2;
+  joint_state_msg.name = new char*[2]{"joint_1", "joint_2"};
+  joint_state_msg.position = new float[2];
+
 }
 
 void loop()
 {
   //create an array of encoder addresses so we can use them in a loop
   uint8_t addresses[2] = {RS485_ENC0, RS485_ENC1};
-  //uint8_t addresses[1] = {RS485_ENC0};
 
   for(int encoder = 0; encoder < sizeof(addresses); ++encoder)
   {
@@ -117,17 +107,10 @@ void loop()
         //we got back a good position, so just mask away the checkbits
         currentPosition &= 0x3FFF;
 
-        //If the resolution is 12-bits, then shift position
-        if (RESOLUTION == 12)
-        {
-          currentPosition = currentPosition >> 2;
-        }
-
-        // // FILTER: Apply the low-pass filter to smooth out the readings
-        // float filteredPosition = alpha * currentPosition + (1 - alpha) * previousPosition[encoder];
-        // previousPosition[encoder] = filteredPosition; // Update for the next loop iteration
-
         float currentPositionRadians = (currentPosition / 16383.0) * (2 * PI);
+
+        // Assign the current position in radians to the joint_state_msg for this encoder
+        joint_state_msg.position[encoder] = currentPositionRadians;
 
         Serial.print("Encoder #");
         Serial.print(encoder, DEC);
@@ -135,7 +118,6 @@ void loop()
         //Serial.print(" position: ");
         Serial.println(currentPositionRadians, 3); //print the position in radians with 3 decimal places
         //Serial.println(currentPosition, DEC); //print the position in decimal format
-        //Serial.println(filteredPosition, DEC); //print the filtered position in decimal format
       }
       else
       {
@@ -155,10 +137,16 @@ void loop()
 
     //flush the received serial buffer just in case anything extra got in there
     while (Serial1.available()) Serial1.read();
+
+    // Publish the JointState message after both positions are updated
+    joint_state_pub.publish(&joint_state_msg);
+    
+    // Handle ROS communications
+    nh.spinOnce();
   }
 
   //For the purpose of this demo we don't need the position returned that quickly so let's wait a half second between reads
-  delay(500);
+  delay(1);
 }
 
 bool verifyChecksumRS485(uint16_t message)
