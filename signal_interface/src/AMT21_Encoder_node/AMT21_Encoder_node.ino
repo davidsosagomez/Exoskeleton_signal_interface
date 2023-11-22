@@ -16,8 +16,11 @@ ros::Publisher joint_state_pub("joint_states", &joint_state_msg);
 
 #define RS485_RESET           0x75
 #define RS485_ZERO            0x5E
-#define RS485_ENC0            0x54
-#define RS485_ENC1            0x58
+#define RS485_ENC1            0x40
+#define RS485_ENC2            0x44
+#define RS485_ENC3            0x48
+#define RS485_ENC4            0x50
+#define RS485_ENC5            0x54
 
 #define RS485_POS             0x00 //this is unnecessary to use but it helps visualize the process for using the other modifiers
 #define RS485_TURNS           0x01
@@ -55,17 +58,17 @@ void setup()
   nh.advertise(joint_state_pub);
 
   // Initialize JointState message
-  joint_state_msg.name_length = 2; // For 2 joints
-  joint_state_msg.position_length = 2;
-  joint_state_msg.name = new char*[2]{"joint_1", "joint_2"};
-  joint_state_msg.position = new float[2];
+  joint_state_msg.name_length = 5; // For 2 joints
+  joint_state_msg.position_length = 5;
+  joint_state_msg.name = new char*[5]{"joint_1", "joint_2", "joint_3", "joint_4", "joint_5"};
+  joint_state_msg.position = new float[5];
 
 }
 
 void loop()
 {
   //create an array of encoder addresses so we can use them in a loop
-  uint8_t addresses[2] = {RS485_ENC0, RS485_ENC1};
+  uint8_t addresses[5] = {RS485_ENC1, RS485_ENC2, RS485_ENC3, RS485_ENC4, RS485_ENC5};
 
   for(int encoder = 0; encoder < sizeof(addresses); ++encoder)
   {
