@@ -5,11 +5,11 @@ from unity_robotics_demo_msgs.msg import PosRot
 from std_msgs.msg import Float64MultiArray
 
 def pose_callback(pose_msg):
-    # Extract position and quaternion from the pose message
+    # Extract position and quaternion from the unity costumize pose message
     position = (pose_msg.pos_x, pose_msg.pos_y, pose_msg.pos_z)
     quaternion = (pose_msg.rot_x, pose_msg.rot_y, pose_msg.rot_z, pose_msg.rot_w)
 
-    # Convert quaternion to transformation matrix
+    # Convert quaternion and position to transformation matrix
     transformation_matrix = tf.transformations.quaternion_matrix(quaternion)
     transformation_matrix[0][3] = position[0]
     transformation_matrix[1][3] = position[1]
@@ -25,10 +25,8 @@ def pose_callback(pose_msg):
 if __name__ == '__main__':
     rospy.init_node('pose_matrix_converter')
 
-    # Subscriber to the /PosRot topic
     rospy.Subscriber('/pos_rot', PosRot, pose_callback)
 
-    # Publisher to the /T_basetracker topic
     pub = rospy.Publisher('/T_basetracker', Float64MultiArray, queue_size=10)
 
     rospy.spin()
