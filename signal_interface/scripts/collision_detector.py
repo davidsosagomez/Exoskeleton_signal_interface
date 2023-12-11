@@ -18,7 +18,7 @@ class CollisionDetector:
         self.collision_pub = rospy.Publisher('/collision', Bool, queue_size=10)
 
         # ROS Subscriber to /tf_matrix
-        rospy.Subscriber("/tf_matrix", Float64MultiArray, self.callback)
+        rospy.Subscriber("/A_EE", Float64MultiArray, self.callback)
 
     def callback(self, msg):
         # Convert data to numpy array
