@@ -17,14 +17,14 @@ void collisionCallback(const std_msgs::Bool& msg) {
     if (input) {
         if (!motorMovedSinceLastFalse) {
             digitalWrite(dirPin, LOW);
-            rotateMotor(15);
+            rotateMotor(8);
             motorMovedSinceLastFalse = true;
         }
         lastCommandWasTrue = true;
     } else {
         if (lastCommandWasTrue) {
             digitalWrite(dirPin, HIGH);
-            rotateMotor(15);
+            rotateMotor(8);
         }
         lastCommandWasTrue = false;
         motorMovedSinceLastFalse = false;
