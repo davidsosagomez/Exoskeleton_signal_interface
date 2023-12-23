@@ -15,12 +15,25 @@ class ForwardKinematics:
         self.jointstate_subscriber = rospy.Subscriber("/joint_states", JointState, self.jointstate_callback)
         self.tf_matrix_pub = rospy.Publisher("/tf_matrix", Float64MultiArray, queue_size = 10)
         self.pose_pub = rospy.Publisher("/end_effector_pose", Pose, queue_size = 10)
+        #self.alpha = np.array([np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0, 0])
+        #self.a = np.array([0, 0.086, 0.2195, 0.2195, 0.2695, 0.20365])
+        #self.d = np.array([0.09793, -0.14106, 0.0697, 0.0692, -0.0133, 0.0252])
+
+        #IN 3D
         self.alpha = np.array([np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0, 0])
-        self.a = np.array([0, 0.086, 0.2195, 0.2207, 0.2695, 0.17632])
-        self.d = np.array([0.11285, 0.14106, 0.0693, 0.0692, 0.0133, 0.0202])
+        self.a = np.array([0.0005, 0.086, 0.2195, 0.2195, 0.2695, 0.20365])
+        self.d = np.array([0.10293, -0.27756, 0.0697, 0.0142, -0.0133, 0.0252])
+
+        #IN 2D
+        #self.alpha = np.array([np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0, 0])
+        #self.a = np.array([0, 0.086, 0.2195, 0.2195, 0.2695, 0.20365])
+        #self.d = np.array([0.09797, -0.14106, 0, 0, 0, 0])
 
     def jointstate_callback(self, msg):
         self.q = np.array(msg.position, dtype = np.float64)
+        # Inserting a 0 at the beginning of the q array
+        self.q = np.insert(self.q, 0, 0)
+        print("q: ", self.q)
         #publishing the pose message we calculated using forward kinematics
         pose_in_cartesian, matrix = self.forward_kinematics_solver(self.q)
         self.pose_pub.publish(pose_in_cartesian)
