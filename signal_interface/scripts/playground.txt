@@ -8,3 +8,14 @@ rostopic pub --once /tf_matrix std_msgs/Float64MultiArray "layout:
     stride: 1
   data_offset: 0
 data: [0.95085546, 0.19840159, 0.2377198, 0.29124849, -0.83371212, -0.46914648, 0.10511047, 0.51532603, -0.85052388, 0.301, -0.139, 0.266]"
+
+rostopic pub --once /A_EE std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: 'rows'
+    size: 3
+    stride: 4
+  - label: 'columns'
+    size: 4
+    stride: 1
+  data_offset: 0
+data: [-0.55, -0.53, -0.65, -0.39, -0.83, 0.45, 0.34, -0.03, 0.11, 0.72, -0.68, 0.47, 0.0, 0.0, 0.0, 1.0]"
