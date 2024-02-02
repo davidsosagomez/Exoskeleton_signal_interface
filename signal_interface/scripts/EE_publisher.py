@@ -44,6 +44,8 @@ class ExoskeletonTracker:
             pose.orientation.w = q[3]
             self.pose_EE_pub.publish(pose)
 
+            #rospy.sleep(1)  # Delay for 1 second
+
 if __name__ == "__main__":
     rospy.init_node("exoskeleton_tracker")
     et = ExoskeletonTracker()
