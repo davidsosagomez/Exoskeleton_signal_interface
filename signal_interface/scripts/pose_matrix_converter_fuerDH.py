@@ -13,10 +13,10 @@ def pose_callback(pose_msg):
     position = (-pose_msg.pos_x, pose_msg.pos_y, pose_msg.pos_z)
     quaternion = (pose_msg.rot_y, pose_msg.rot_z, pose_msg.rot_x, pose_msg.rot_w)
 
-    print("quaternion: ", quaternion)
+    #print("quaternion: ", quaternion)
 
 
-    print("Position (x, y, z): ", position)
+    #print("Position (x, y, z): ", position)
 
     # Convert the rotated quaternion and position to a transformation matrix
     #transformation_matrix = tf.transformations.quaternion_matrix(rotated_quaternion)
