@@ -2,11 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-# Define the quaternions
 q1 = np.array([0.03937, 0.04345, 0.17379, 0.98304])
 q2 = np.array([-0.17269, 0.04627, 0.17560, 0.96809])
 
-# Calculate Euclidean distance as the overall deviation
+# Calculation of euclidean distance and overall deviation
 overall_deviation = np.linalg.norm(q1 - q2)
 print(f"Euclidean distance between q1 and q2: {overall_deviation}")
 print(f"Overall deviation between q1 and q2: {overall_deviation*100:.2f}%")
